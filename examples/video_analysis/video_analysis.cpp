@@ -259,33 +259,33 @@ void Detector<Dtype>::ShowResult(const vector<cv::Mat> &imgs,
                                  const vector<vector<detect_result>> objects,
                                  bool step_mode)
 {
-    for (int i = 0; i < objects.size(); i++) {
-      if (objects[i].size() == 0)
-        continue;
-      int frame_num = objects[i][0].imgid;
-      cv::Mat img = imgs[frame_num].clone();
-      for (int j = 0; j < objects[i].size(); j++) {
-        detect_result obj = objects[i][j];
-	cv::rectangle(img,
-                      cvPoint(obj.left, obj.top),
-                      cvPoint(obj.right, obj.bottom),
-                      cv::Scalar(255, 242, 35));
-	std::stringstream ss;
-	ss << obj.classid << "/" << obj.confidence;
-	std::string  text = ss.str();
-	cv::putText(img,
-                    text,
-                    cvPoint(obj.left, obj.top + 20),
-                    cv::FONT_HERSHEY_PLAIN,
-                    1.0f,
-                    cv::Scalar(0, 255, 255));
-      }
-      cv::imshow("detections", img);
-      int wait_ms = step_mode ? 0 : 1;
-      int key = cv::waitKey(static_cast<char>(wait_ms));
-      if (key == 'q')
-        exit(1);
+  for (int i = 0; i < objects.size(); i++) {
+    if (objects[i].size() == 0)
+      continue;
+    int frame_num = objects[i][0].imgid;
+    cv::Mat img = imgs[frame_num].clone();
+    for (int j = 0; j < objects[i].size(); j++) {
+      detect_result obj = objects[i][j];
+      cv::rectangle(img,
+                    cvPoint(obj.left, obj.top),
+                    cvPoint(obj.right, obj.bottom),
+                    cv::Scalar(255, 242, 35));
+      std::stringstream ss;
+      ss << obj.classid << "/" << obj.confidence;
+      std::string  text = ss.str();
+      cv::putText(img,
+                  text,
+                  cvPoint(obj.left, obj.top + 20),
+                  cv::FONT_HERSHEY_PLAIN,
+                  1.0f,
+                  cv::Scalar(0, 255, 255));
     }
+    cv::imshow("detections", img);
+    int wait_ms = step_mode ? 0 : 1;
+    int key = cv::waitKey(static_cast<char>(wait_ms));
+    if (key == 'q')
+      exit(1);
+  }
 }
 
 // Normalized coordinate fixup for yolo
