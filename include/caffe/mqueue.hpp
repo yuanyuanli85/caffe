@@ -24,8 +24,6 @@ using namespace half_float;
 
 namespace simple_mqueue {
 
-//using namespace std;
-
 enum NodeType {
   NodeTypeClient,
   NodeTypeHost
@@ -77,7 +75,7 @@ class Memory {
 public:
   Memory(int batch, int channel, int h, int w) {
     own_data_ = false;
-    allocate(batch * channel * h * w * sizeof(Dtype));
+    allocate(batch * channel * h * w);
     reshape(batch, channel, h, w);
   }
   Memory(int batch, int channel, int h, int w, Dtype *data) {
@@ -412,8 +410,10 @@ public:
         event.events = EPOLLIN | EPOLLET;
         epoll_ctl(epfds_, EPOLL_CTL_ADD, conn_fd, &event);
         sockets_.push_back(conn_fd);
-        SendMessage(msg, conn_fd);
-        weights_bytes_ += msg->memory()->count(0) * sizeof(Dtype);
+        if (msg != nullptr) {
+          SendMessage(msg, conn_fd);
+          weights_bytes_ += msg->memory()->count(0) * sizeof(Dtype);
+        }
       }
       close(listen_fd);
     } else if (type_ == NodeTypeClient) {
@@ -470,9 +470,9 @@ public:
       sockets_.clear();
       close(epfds_);
     }
-    printf("Received %.1f MB, sent %.1f MB", recved_bytes_total_/1.e6, sent_bytes_total_/1.e6);
+    printf("Received %lu B, sent %lu B", recved_bytes_total_/*/1.e6*/, sent_bytes_total_/*/1.e6*/);
     if (type_ == NodeTypeHost) {
-      printf("(including weights %.1f MB)", weights_bytes_/1.e6);
+      printf("(including weights %lu B)", weights_bytes_/*/1.e6*/);
     }
     printf("\n");
   }
@@ -585,13 +585,21 @@ private:
       int recv_bytes = Recv(socket, &hdr, sizeof(hdr), MSG_WAITALL);
       assert(recv_bytes == (int)sizeof(hdr));
       assert(hdr.data_type == GetDataType<Dtype>());
-      assert(hdr.len() == bs * messages[i]->memory()->count(1));
+
+      if (hdr.len() != bs * messages[i]->memory()->count(1)) {
+        messages[i]->mutable_memory()->reshape(messages[i]->memory()->shape()[0],
+                                               hdr.shape[1],
+                                               hdr.shape[2],
+                                               hdr.shape[3]);
+
+      }
       if (hdr.extra_shape_len != 0) {
         assert(messages[i]->has_extra_memory());
         int *shape_data = &messages[i]->mutable_extra_memory()->at(batch_index, 0, 0, 0);
         recv_bytes = Recv(socket, shape_data, hdr.extra_shape_len * sizeof(int), MSG_WAITALL);
         assert(recv_bytes == (int)(hdr.extra_shape_len * sizeof(int)));
       }
+
       Dtype *ptr = &messages[i]->mutable_memory()->at(batch_index, 0, 0, 0);
       recv_bytes = Recv(socket, ptr, hdr.len() * sizeof(Dtype), MSG_WAITALL);
       assert(recv_bytes == (int)(hdr.len() * sizeof(Dtype)));
