@@ -3,8 +3,9 @@ import pandas as pd
 from generate_labelmap import  generate_classname_map
 from collections import defaultdict
 from dataset_xml import AnnoXml
-from opimg_datacfg import DataConfig
+from opim_datacfg import DataConfig
 import cv2
+import argparse
 
 def get_image_shape(imgfile):
     cvmat = cv2.imread(imgfile)
@@ -26,14 +27,34 @@ def load_annotation(annofile, classdescfile):
         xdict[imageid].append(xitem)
     return xdict
 
-def convert_valanno_to_xml():
-    datacfg = DataConfig()
-    xdict = load_annotation(datacfg.validation_anno_file, datacfg.class_description_file)
+def convert_valanno_to_xml(annofile, imagepath, xmlpath, class_description_file):
+    xdict = load_annotation(annofile, class_description_file)
     for key, value in xdict.items():
-        outxml = os.path.join(datacfg.validation_xml_path, key+'.xml')
-        imgfile = os.path.join(datacfg.val_images_path, key+'.jpg')
+        outxml = os.path.join(xmlpath, key+'.xml')
+        imgfile = os.path.join(imagepath, key+'.jpg')
         xml = AnnoXml(imgfile, get_image_shape(imgfile))
         for object in value:
             xml.insert_object(object)
         xml.dump_to_file(outxml)
         print key, 'save to', outxml
+
+def main(dataset):
+    cfg = DataConfig()
+    if dataset == 'val':
+        xmlpath = cfg.validation_xml_path
+        imgpath = cfg.val_images_path
+        annofile = cfg.validation_anno_file
+    elif dataset == 'train':
+        xmlpath = cfg.train_xml_path
+        imgpath = cfg.train_images_path
+        annofile = cfg.train_anno_file
+    else:
+        assert (0), dataset + ' not supported, only val or train'
+
+    convert_valanno_to_xml(annofile, imgpath, xmlpath, cfg.class_description_file)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Convert open image annotation from csv to xml")
+    parser.add_argument("--dataset", help=" val or train", required=True)
+    args = parser.parse_args()
+    main(args.dataset)

@@ -15,6 +15,7 @@ class DataConfig(object):
     train_images_path = "../data/open_images/train/train"
     train_list_txt = "../data/open_images/train.txt"
     train_xml_path = "../data/open_images/train/xml"
+    train_anno_file = os.path.join(anno_file_path, "train-annotations-bbox.csv")
 
     #test cfg
     test_images_path = "../data/open_images/test/test"
