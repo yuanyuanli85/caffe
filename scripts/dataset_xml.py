@@ -1,12 +1,12 @@
 from xml.dom.minidom import Document
-
+import os
 
 class AnnoXml(object):
 
-    def __init__(self, filename, filefolder, imageshape):
-        self.filename = filename
+    def __init__(self, filename,  imageshape):
+        self.filename   = os.path.basename(filename)
         self.imageshape = imageshape
-        self.filefolder    = filefolder
+        self.filefolder = os.path.basename(os.path.dirname(os.path.abspath(filename)))
         self._xml_header()
 
     def _xml_header(self):

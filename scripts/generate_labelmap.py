@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 from collections import defaultdict
-from utest_read_csv import DataConfig
+from opim_datacfg import DataConfig
 
 def generate_classname_map(clasnamefile):
     '''
