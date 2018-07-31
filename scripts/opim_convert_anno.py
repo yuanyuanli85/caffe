@@ -31,6 +31,8 @@ def convert_valanno_to_xml(annofile, imagepath, xmlpath, class_description_file)
     xdict = load_annotation(annofile, class_description_file)
     for key, value in xdict.items():
         outxml = os.path.join(xmlpath, key+'.xml')
+        if os.path.exists(outxml):
+            continue
         imgfile = os.path.join(imagepath, key+'.jpg')
         xml = AnnoXml(imgfile, get_image_shape(imgfile))
         for object in value:
