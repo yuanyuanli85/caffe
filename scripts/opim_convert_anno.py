@@ -6,10 +6,18 @@ from dataset_xml import AnnoXml
 from opim_datacfg import DataConfig
 import cv2
 import argparse
+import time
+from PIL import Image
+
 
 def get_image_shape(imgfile):
     cvmat = cv2.imread(imgfile)
     return cvmat.shape
+
+def get_image_shape_v2(imgfile):
+    im = Image.open(imgfile)
+    width, height = im.size
+    return (height, width, 3)
 
 def load_annotation(annofile, classdescfile):
     xdf = pd.read_csv(annofile)
@@ -29,16 +37,21 @@ def load_annotation(annofile, classdescfile):
 
 def convert_valanno_to_xml(annofile, imagepath, xmlpath, class_description_file):
     xdict = load_annotation(annofile, class_description_file)
+
+    count = 0
     for key, value in xdict.items():
         outxml = os.path.join(xmlpath, key+'.xml')
         if os.path.exists(outxml):
             continue
         imgfile = os.path.join(imagepath, key+'.jpg')
-        xml = AnnoXml(imgfile, get_image_shape(imgfile))
+        xml = AnnoXml(imgfile, get_image_shape_v2(imgfile))
         for object in value:
             xml.insert_object(object)
         xml.dump_to_file(outxml)
-        print key, 'save to', outxml
+
+        count += 1
+        if count %1000 == 0:
+            print count, 'save to', xmlpath
 
 def main(dataset):
     cfg = DataConfig()
@@ -53,7 +66,10 @@ def main(dataset):
     else:
         assert (0), dataset + ' not supported, only val or train'
 
+    start = time.time()
     convert_valanno_to_xml(annofile, imgpath, xmlpath, cfg.class_description_file)
+    end  = time.time()
+    print dataset, ' finished in ', end-start
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Convert open image annotation from csv to xml")
