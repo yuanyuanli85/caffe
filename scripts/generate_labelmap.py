@@ -2,8 +2,9 @@ import pandas as pd
 import os
 from collections import defaultdict
 from opim_datacfg import DataConfig
+from opim_class_hierarchy import get_2ndlevel_class
 
-def generate_classname_map(clasnamefile):
+def generate_classname_map(clasnamefile, class_hierarchy_json):
     '''
 
     Args:
@@ -12,20 +13,23 @@ def generate_classname_map(clasnamefile):
     Returns: name code -> human readable name
 
     '''
+    parent_class = get_2ndlevel_class(class_hierarchy_json)
+
     cdf = pd.read_csv(clasnamefile, header=None, names=['namecode', 'name'] )
     map = dict()
     classid = 1 # start from 1, since 0 reserved by background type
     for _index, _row in cdf.iterrows():
         key = _row['namecode']
         value = _row['name']
-        map[key] = (value, classid)
-        classid += 1
+        if key in parent_class:
+            map[key] = (value, classid)
+            classid += 1
     return map
 
 
 def generate_labelmap():
     datacfg = DataConfig()
-    classmap = generate_classname_map(datacfg.class_description_file)
+    classmap = generate_classname_map(datacfg.class_description_file, datacfg.class_hierarchy)
     labelmapfile = 'bbox_labelmap.prototxt'
     with open(labelmapfile, 'w') as labelfile:
         #write background at first

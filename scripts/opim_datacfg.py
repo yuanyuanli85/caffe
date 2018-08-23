@@ -4,6 +4,7 @@ class DataConfig(object):
     anno_file_path = "../data/open_images/annotations/"
 
     class_description_file = os.path.join(anno_file_path, "class-descriptions-boxable.csv")
+    class_hierarchy = os.path.join(anno_file_path, "bbox_labels_600_hierarchy.json")
 
     #validation cfg
     val_list_txt = "../data/open_images/val.txt"

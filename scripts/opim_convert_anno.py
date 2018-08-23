@@ -19,14 +19,16 @@ def get_image_shape_v2(imgfile):
     width, height = im.size
     return (height, width, 3)
 
-def load_annotation(annofile, classdescfile):
+def load_annotation(annofile, classdescfile, class_hierarchy):
     xdf = pd.read_csv(annofile)
-    classnameMap = generate_classname_map(classdescfile)
+    classnameMap = generate_classname_map(classdescfile, class_hierarchy)
 
     xdict = defaultdict(list)
     for _index, _row in xdf.iterrows():
         imageid = _row['ImageID']
         imagelabel = _row['LabelName']
+        if imagelabel not in classnameMap.keys():
+            continue
         classname = classnameMap[imagelabel][0]
         occuluded = _row['IsOccluded']
         xitem = { 'imageid' : imageid, 'classname' : classname,

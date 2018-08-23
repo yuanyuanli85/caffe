@@ -68,10 +68,10 @@ class Scheduler:
         print "all of workers have been done"
 
 
-def convert_valanno_to_xml(annofile, core_num, imagepath, xmlpath, class_description_file):
+def convert_valanno_to_xml(annofile, core_num, imagepath, xmlpath, class_description_file, class_hierarchy):
     xscheduler = Scheduler(range(core_num), imagepath, xmlpath)
 
-    xdict = load_annotation(annofile, class_description_file)
+    xdict = load_annotation(annofile, class_description_file, class_hierarchy)
 
     xscheduler.start(xdict)
 
@@ -90,7 +90,7 @@ def main(dataset, cores):
         assert (0), dataset + ' not supported, only val or train'
 
     start = time.time()
-    convert_valanno_to_xml(annofile, cores, imgpath, xmlpath, cfg.class_description_file)
+    convert_valanno_to_xml(annofile, cores, imgpath, xmlpath, cfg.class_description_file, cfg.class_hierarchy)
     end  = time.time()
     print dataset, ' finished in ', end-start
 
