@@ -13,7 +13,11 @@ def generate_classname_map(clasnamefile, class_hierarchy_json):
     Returns: name code -> human readable name
 
     '''
-    parent_class = get_2ndlevel_class(class_hierarchy_json)
+    fixed = True
+    if fixed:
+        parent_class = get_fixed_12classes('selected_12classes.prototxt')
+    else:
+        parent_class = get_2ndlevel_class(class_hierarchy_json)
 
     cdf = pd.read_csv(clasnamefile, header=None, names=['namecode', 'name'] )
     map = dict()
@@ -21,11 +25,24 @@ def generate_classname_map(clasnamefile, class_hierarchy_json):
     for _index, _row in cdf.iterrows():
         key = _row['namecode']
         value = _row['name']
-        if key in parent_class:
+        if value in parent_class:
             map[key] = (value, classid)
             classid += 1
     return map
 
+
+
+
+def get_fixed_12classes(xfile):
+    with open(xfile) as f:
+        lines = f.readlines()
+
+    classlist = list()
+    for xline in lines:
+        classname = xline.strip()
+        classlist.append(classname)
+
+    return classlist
 
 def generate_labelmap():
     datacfg = DataConfig()
